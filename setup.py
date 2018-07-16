@@ -37,6 +37,11 @@ setup(
         'Programming Language :: Python :: 3.5',
     ],
     install_requires=[
+        'sphinx-autoapi',
+        'setuptools',
+        'sphinx',
+        'autoapi',
+        'sphinxcontrib-websupport'
     ],
     entry_points={
         'data_manager.data_parsers': [
