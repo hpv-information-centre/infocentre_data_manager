@@ -4,7 +4,7 @@ from setuptools import find_packages, setup
 import sys
 
 sys.path.insert(0, os.path.abspath(__file__))
-from reportcompiler_ic_tools import __version__
+from infocentre_data_manager import __version__
 
 module_name = 'infocentre-data-manager'
 module_dir_name = 'infocentre_data_manager'
@@ -22,7 +22,7 @@ setup(
                 'provide methods and utilities to upload scientific data '
                 'from different sources and perform different (pluggable) '
                 'data validation procedures to update the HPV Information '
-                'Centre scientific databases.'
+                'Centre scientific databases.',
     long_description=README,
     url='https://www.hpvcentre.net',
     author='David Gómez',

@@ -12,10 +12,10 @@ This project is being developed by the ICO/IARC Information Centre on HPV and Ca
    :align: center
    :target: http://www.hpvcentre.net
 
-.. |docs| image:: https://readthedocs.org/projects/infocentre-data-manager/badge/?version=stable
+.. |docs| image:: https://readthedocs.org/projects/infocentre-data-manager/badge/?version=develop
     :alt: Documentation Status
     :scale: 100%
-    :target: https://infocentre-data-manager.readthedocs.io/en/stable/?badge=stable
+    :target: https://infocentre-data-manager.readthedocs.io/en/develop/?badge=develop
 
 Features
 ============
@@ -30,8 +30,8 @@ Package
 
 .. code:: bash
 
- git clone https://github.com/hpv-information-centre/reportcompiler-ic-data-manager
- cd reportcompiler-ic-data-manager/scripts
+ git clone https://github.com/hpv-information-centre/infocentre_data_manager
+ cd infocentre_data_manager/scripts
  ./install_package.sh
 
 
