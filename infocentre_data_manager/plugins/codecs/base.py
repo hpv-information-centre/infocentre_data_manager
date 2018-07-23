@@ -6,7 +6,7 @@ This module includes the base plugin interface for data fetchers.
 
 import logging
 from abc import abstractmethod
-from infocentre.plugins.plugin_module import PluginModule
+from infocentre_data_manager.plugins.plugin_module import PluginModule
 
 __all__ = ['DataParser', ]
 
@@ -20,11 +20,11 @@ class DataParser(PluginModule):
     entry_point_group = 'data_parsers'
 
     @abstractmethod
-    def load(self, load_info):
+    def load(self, **kwargs):
         raise NotImplementedError(
             'Data loading not implemented for {}'.format(self.__class__))
 
     @abstractmethod
-    def store(self, data_dict):
+    def store(self, data, **kwargs):
         raise NotImplementedError(
             'Data storing not implemented for {}'.format(self.__class__))

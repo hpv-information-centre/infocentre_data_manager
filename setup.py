@@ -44,10 +44,10 @@ setup(
         'sphinxcontrib-websupport'
     ],
     entry_points={
-        'data_manager.data_parsers': [
-            'excel=infocentre_data_manager.plugins.data_parsers.excel:'
+        'data_manager.codecs': [
+            'excel=infocentre_data_manager.plugins.codecs.excel:'
             'ExcelParser',
-            'mysql=infocentre_data_manager.plugins.data_parsers.mysql:'
+            'mysql=infocentre_data_manager.plugins.codecs.mysql:'
             'MySQLParser',
         ],
         'data_manager.data_validators': [

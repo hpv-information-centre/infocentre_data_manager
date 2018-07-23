@@ -1,18 +1,18 @@
-""" base.py
+""" missing_values.py
 
-This module includes the validator for variable typing.
+This module includes the validator for detecting missing values.
 
 """
 
 import logging
 from infocentre.plugins.data_validators.base import DataValidator
 
-__all__ = ['TypeValidator', ]
+__all__ = ['MissingValuesValidator', ]
 
 
-class TypeValidator(DataValidator):
+class MissingValuesValidator(DataValidator):
     """
-    Plugin that implements a variable typing validator for HPV Information
+    Plugin that implements a missing values validator for HPV Information
     Centre data.
     """
 
