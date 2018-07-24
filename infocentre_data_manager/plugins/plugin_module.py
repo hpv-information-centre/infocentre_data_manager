@@ -27,7 +27,7 @@ class PluginModuleMeta(type):
 class PluginModule(object, metaclass=PluginModuleMeta):
     """ Base class that implements the plugin architecture. All direct
     subclasses of this module represent different stages and they have a
-    factory method that scans their directory (e.g. data_parsers,
+    factory method that scans their directory (e.g. codecs,
     data_validators, ...) and instantiates a particular subsubclass (e.g.
     ExcelParser) with only their name (e.g. 'excel'). For new
     plugins of a particular type this doesn't require any imports; this

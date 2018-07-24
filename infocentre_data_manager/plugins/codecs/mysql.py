@@ -7,12 +7,12 @@ This module includes the base plugin interface for data fetchers.
 import logging
 import pandas as pd
 import pymysql.cursors
-from infocentre_data_manager.plugins.codecs.base import DataParser
+from infocentre_data_manager.plugins.codecs.base import Codec
 
 __all__ = ['MySQLParser', ]
 
 
-class MySQLParser(DataParser):
+class MySQLParser(Codec):
     """
     Plugin that implements the HPV Information Centre data loading from and
     storing to different data sources.

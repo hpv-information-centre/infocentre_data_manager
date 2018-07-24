@@ -7,12 +7,12 @@ This module includes the base plugin interface for data fetchers.
 import logging
 import pandas as pd
 import xlsxwriter
-from infocentre_data_manager.plugins.codecs.base import DataParser
+from infocentre_data_manager.plugins.codecs.base import Codec
 
 __all__ = ['ExcelParser', ]
 
 
-class ExcelParser(DataParser):
+class ExcelParser(Codec):
     """
     Plugin that implements the HPV Information Centre data loading from and
     storing to different data sources.
@@ -30,20 +30,7 @@ class ExcelParser(DataParser):
         general.columns = ['table_name',
                            'contents',
                            'data_manager',
-                           'comments',
-                           'date_accessed',
-                           'date_closing',
-                           'date_published',
-                           'date_delivery']
-        dates = pd.DataFrame(general)
-        dates = dates[['date_accessed',
-                       'date_closing',
-                       'date_published',
-                       'date_delivery']]
-        general = general[['table_name',
-                           'contents',
-                           'data_manager',
-                           'comments']]
+                           'comments']
 
         variables = pd.read_excel(excel_file, sheet_name='VARIABLES')
         data = pd.read_excel(excel_file, sheet_name='DATA')
@@ -51,7 +38,7 @@ class ExcelParser(DataParser):
         notes = pd.read_excel(excel_file, sheet_name='NOTES')
         methods = pd.read_excel(excel_file, sheet_name='METHODS')
         years = pd.read_excel(excel_file, sheet_name='YEARS')
-        logs = pd.read_excel(excel_file, sheet_name='LOGS')
+        dates = pd.read_excel(excel_file, sheet_name='DATES')
 
         return {
             'general': general,
@@ -62,7 +49,6 @@ class ExcelParser(DataParser):
             'methods': methods,
             'years': years,
             'dates': dates,
-            'logs': logs,
         }
 
     def store(self, data, **kwargs):
@@ -80,8 +66,7 @@ class ExcelParser(DataParser):
         self._create_notes_sheet(data, workbook)
         self._create_methods_sheet(data, workbook)
         self._create_years_sheet(data, workbook)
-        # self._create_dates_sheet(data, workbook)
-        self._create_logs_sheet(data, workbook)
+        self._create_dates_sheet(data, workbook)
 
         workbook.close()
 
@@ -126,16 +111,9 @@ class ExcelParser(DataParser):
                            ('DATABASE TABLE NAME',
                             'CONTENTS',
                             'DATA MANAGER',
-                            'COMMENTS',
-                            'ACCESS DATE',
-                            'CLOSING DATE',
-                            'PUBLICATION DATE',
-                            'DELIVERY DATE'),
+                            'COMMENTS',),
                            cell_format=label_format)
-        general_data = pd.concat([
-            data['general'].loc[1, :],
-            data['dates'].loc[1, :]
-        ], ignore_index=True)
+        general_data = data['general'].loc[1, :]
         sheet.write_column('B5',
                            general_data,
                            cell_format=value_format)
@@ -233,22 +211,20 @@ class ExcelParser(DataParser):
         df = data['years'][expected_columns]
         self._create_sheet_from_df(df, sheet, workbook)
 
-    def _create_logs_sheet(self, data, workbook):
-        sheet = workbook.add_worksheet(name='LOGS')
+    def _create_dates_sheet(self, data, workbook):
+        sheet = workbook.add_worksheet(name='DATES')
         expected_columns = [
-            'author',
-            'date',
-            'message',
-            'action',
-            'variables',
-            'data',
-            'sources',
-            'notes',
-            'methods',
-            'dates'
+            'iso',
+            'strata_variable',
+            'strata_value',
+            'applyto_variable',
+            'date_accessed',
+            'date_closing',
+            'date_published',
+            'date_delivery'
         ]
-        self._validate_sheet_columns('logs', data, expected_columns)
-        df = data['logs'][expected_columns]
+        self._validate_sheet_columns('dates', data, expected_columns)
+        df = data['dates'][expected_columns]
         self._create_sheet_from_df(df, sheet, workbook)
 
     def _validate_sheet_columns(self, data_type, data, expected_columns):

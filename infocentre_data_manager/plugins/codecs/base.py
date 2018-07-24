@@ -11,13 +11,13 @@ from infocentre_data_manager.plugins.plugin_module import PluginModule
 __all__ = ['DataParser', ]
 
 
-class DataParser(PluginModule):
+class Codec(PluginModule):
     """
     Plugin that implements the HPV Information Centre data loading from and 
     storing to different data sources.
     """
 
-    entry_point_group = 'data_parsers'
+    entry_point_group = 'codecs'
 
     @abstractmethod
     def load(self, **kwargs):
