@@ -46,9 +46,9 @@ setup(
     entry_points={
         'data_manager.codecs': [
             'excel=infocentre_data_manager.plugins.codecs.excel:'
-            'ExcelParser',
+            'ExcelCodec',
             'mysql=infocentre_data_manager.plugins.codecs.mysql:'
-            'MySQLParser',
+            'MySQLCodec',
         ],
         'data_manager.data_validators': [
             'type=infocentre_data_manager.plugins.data_validators.type:'

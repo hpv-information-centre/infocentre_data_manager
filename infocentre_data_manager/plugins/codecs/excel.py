@@ -1,6 +1,6 @@
-""" base.py
+""" excel.py
 
-This module includes the base plugin interface for data fetchers.
+This module includes the codec implementation for excel data sources.
 
 """
 
@@ -9,10 +9,10 @@ import pandas as pd
 import xlsxwriter
 from infocentre_data_manager.plugins.codecs.base import Codec
 
-__all__ = ['ExcelParser', ]
+__all__ = ['ExcelCodec', ]
 
 
-class ExcelParser(Codec):
+class ExcelCodec(Codec):
     """
     Plugin that implements the HPV Information Centre data loading from and
     storing to different data sources.
@@ -39,6 +39,7 @@ class ExcelParser(Codec):
         methods = pd.read_excel(excel_file, sheet_name='METHODS')
         years = pd.read_excel(excel_file, sheet_name='YEARS')
         dates = pd.read_excel(excel_file, sheet_name='DATES')
+        dates.replace('nan', '')
 
         return {
             'general': general,
@@ -113,7 +114,7 @@ class ExcelParser(Codec):
                             'DATA MANAGER',
                             'COMMENTS',),
                            cell_format=label_format)
-        general_data = data['general'].loc[1, :]
+        general_data = data['general'].iloc[0, :]
         sheet.write_column('B5',
                            general_data,
                            cell_format=value_format)
