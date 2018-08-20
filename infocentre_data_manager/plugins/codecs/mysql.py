@@ -46,7 +46,7 @@ class MySQLCodec(Codec):
         )
 
         variables = pd.read_sql(
-            'SELECT var AS variable, description, semantic_type AS type '
+            'SELECT name AS variable, description, semantic_type AS type '
             'FROM info_vars '
             'WHERE data_table = %s'
             'ORDER BY `order` ASC',
@@ -180,7 +180,7 @@ class MySQLCodec(Codec):
             with conn.cursor() as cursor:
                 cursor.execute(
                     'INSERT INTO info_vars'
-                    ' (data_table, var, description, semantic_type, `order`) '
+                    ' (data_table, name, description, semantic_type, `order`) '
                     'VALUES (%s, %s, %s, %s, %s)',
                     [table_name, var.variable, var.description, var.type, i]
                     )
