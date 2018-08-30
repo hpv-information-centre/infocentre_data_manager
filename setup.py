@@ -51,8 +51,16 @@ setup(
             'MySQLCodec',
         ],
         'data_manager.data_validators': [
+            'null=infocentre_data_manager.plugins.data_validators.null:'
+            'NullValidator',
             'type=infocentre_data_manager.plugins.data_validators.type:'
             'TypeValidator',
+            'missing_values=infocentre_data_manager.plugins.data_validators.missing_values:'
+            'MissingValuesValidator',
+        ],
+        'data_manager.semantic_types': [
+            'integer=infocentre_data_manager.plugins.semantic_types.integer:'
+            'IntegerType',
         ],
     },
 )
