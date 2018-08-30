@@ -3,14 +3,14 @@
 Data parsing
 ===============
 
-These modules load or store the HPV Information Centre data tables and its corresponding references via a particular interface (excel files, SQL, ...). By using these, scientific data can be easily translated between different formats.
+The codec modules will load or store the HPV Information Centre data tables and its corresponding references via a particular interface (excel files, SQL, ...). By using these, scientific data can be easily translated between different formats.
 
 
 
 Intermediate data representation
 ---------------------------------
 
-As an intermediate data representation between the loading and storing, a python dictionary with the following keys should be expected. Besides these, other values can be stored but with no guarantees that each parser will consider them and therefore can potentially be lost.
+A python dictionary with the following structure should be built by each codec's load method. Besides these, other values can be added but with no guarantees that other codecs will consider them and therefore the information can potentially be lost.
 
 * **general**: A single row dataframe with the following columns:
    * **table_name**: The table name. If the name contains '_m*_' the corresponding number will be extracted as the data module.

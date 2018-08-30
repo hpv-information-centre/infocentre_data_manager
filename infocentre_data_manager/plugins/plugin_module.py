@@ -29,7 +29,7 @@ class PluginModule(object, metaclass=PluginModuleMeta):
     subclasses of this module represent different stages and they have a
     factory method that scans their directory (e.g. codecs,
     data_validators, ...) and instantiates a particular subsubclass (e.g.
-    ExcelParser) with only their name (e.g. 'excel'). For new
+    ExcelCodec) with only their name (e.g. 'excel'). For new
     plugins of a particular type this doesn't require any imports; this
     class automatically scans the directory for suitable modules and
     classes."""

@@ -5,7 +5,7 @@ This module includes the validator for variable typing.
 """
 
 import logging
-from infocentre.plugins.data_validators.base import DataValidator
+from infocentre_data_manager.plugins.data_validators.base import DataValidator
 
 __all__ = ['TypeValidator', ]
 

@@ -6,7 +6,7 @@ This module includes the base plugin interface for data fetchers.
 
 import logging
 from abc import abstractmethod
-from infocentre.plugins.plugin_module import PluginModule
+from infocentre_data_manager.plugins.plugin_module import PluginModule
 
 __all__ = ['DataValidator', ]
 

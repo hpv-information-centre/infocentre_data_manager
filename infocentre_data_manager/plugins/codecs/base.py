@@ -8,7 +8,7 @@ import logging
 from abc import abstractmethod
 from infocentre_data_manager.plugins.plugin_module import PluginModule
 
-__all__ = ['DataParser', ]
+__all__ = ['Codec', ]
 
 
 class Codec(PluginModule):
