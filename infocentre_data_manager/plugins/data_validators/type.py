@@ -16,6 +16,8 @@ class TypeValidator(DataValidator):
     Centre data.
     """
 
-    def validate(self, data_dict):
+    name = 'Semantic type validator'
+
+    def validate(self, data_dict, **kwargs):
         raise NotImplementedError(
             'Data validation not implemented for {}'.format(self.__class__))

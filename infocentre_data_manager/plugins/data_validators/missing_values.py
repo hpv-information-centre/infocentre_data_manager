@@ -16,6 +16,8 @@ class MissingValuesValidator(DataValidator):
     Centre data.
     """
 
-    def validate(self, data_dict):
+    name = 'Missing values validator'
+
+    def validate(self, data_dict, **kwargs):
         raise NotImplementedError(
             'Data validation not implemented for {}'.format(self.__class__))
