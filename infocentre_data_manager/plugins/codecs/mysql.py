@@ -125,16 +125,20 @@ class MySQLCodec(Codec):
                                charset='utf8',
                                cursorclass=pymysql.cursors.DictCursor)
 
-        self._store_general_data(conn, data)
-        self._store_variable_data(conn, data)
-        self._store_raw_data(conn, data)
-        self._store_ref_data(conn, data, 'sources')
-        self._store_ref_data(conn, data, 'notes')
-        self._store_ref_data(conn, data, 'methods')
-        self._store_ref_data(conn, data, 'years')
-        self._store_dates_data(conn, data)
+        try:
+            self._store_general_data(conn, data)
+            self._store_variable_data(conn, data)
+            self._store_raw_data(conn, data)
+            self._store_ref_data(conn, data, 'sources')
+            self._store_ref_data(conn, data, 'notes')
+            self._store_ref_data(conn, data, 'methods')
+            self._store_ref_data(conn, data, 'years')
+            self._store_dates_data(conn, data)
+            conn.commit()
+        except Exception as e:
+            conn.rollback()
+            raise e from None
 
-        conn.commit()
         conn.close()
 
     def _store_general_data(self, conn, data):
@@ -189,7 +193,7 @@ class MySQLCodec(Codec):
         table_name = data['general']['table_name'].iloc[0]
 
         try:
-            conn.query('TRUNCATE {}'.format(table_name))
+            conn.query('DELETE FROM {}'.format(table_name))
         except ProgrammingError:
             raise EnvironmentError(
                 "Table '{}' does not exist, create it first.")
