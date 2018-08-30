@@ -137,9 +137,9 @@ class ExcelCodec(Codec):
 
         sheet.write_row('A1',
                         (
-                            'Variable',
-                            'Description',
-                            'Type',
+                            'variable',
+                            'description',
+                            'type',
                         ),
                         cell_format=header_format)
 
