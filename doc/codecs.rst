@@ -1,10 +1,9 @@
-.. _`data_parsing`: 
+.. _`codecs`: 
 
-Data parsing
+Data codecs
 ===============
 
-The codec modules will load or store the HPV Information Centre data tables and its corresponding references via a particular interface (excel files, SQL, ...). By using these, scientific data can be easily translated between different formats.
-
+The codec modules will load or store the HPV Information Centre data tables and its corresponding references via a particular interface (excel files, SQL, ...). By using these, scientific data can be easily translated between different formats. For a more convenient conversion between formats, the *convert* method is available (see API reference).
 
 
 Intermediate data representation
