@@ -13,7 +13,7 @@ __all__ = ['Codec', ]
 
 class Codec(PluginModule):
     """
-    Plugin that implements the HPV Information Centre data loading from and 
+    Plugin that implements the HPV Information Centre data loading from and
     storing to different data sources.
     """
 
@@ -28,3 +28,16 @@ class Codec(PluginModule):
     def store(self, data, **kwargs):
         raise NotImplementedError(
             'Data storing not implemented for {}'.format(self.__class__))
+
+    @staticmethod
+    def convert(src_codec, src_params, dst_codec, dst_params):
+        """
+        Converts HPV Information Centre data from one data source to another.
+
+        :param src_codec: Source codec id (will load the data).
+        :param src_params: Parameters passed to the source codec.
+        :param dst_codec: Codec id (will store the data).
+        :param dst_params: Parameters passed to the destination codec.
+        """
+        data = Codec.get(src_codec).load(**src_params)
+        Codec.get(dst_codec).store(data, **dst_params)
