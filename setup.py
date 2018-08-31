@@ -53,6 +53,8 @@ setup(
         'data_manager.data_validators': [
             'null=infocentre_data_manager.plugins.data_validators.null:'
             'NullValidator',
+            'basic=infocentre_data_manager.plugins.data_validators.basic:'
+            'BasicValidator',
             'type=infocentre_data_manager.plugins.data_validators.type:'
             'TypeValidator',
             'missing_values=infocentre_data_manager.plugins.data_validators.missing_values:'
