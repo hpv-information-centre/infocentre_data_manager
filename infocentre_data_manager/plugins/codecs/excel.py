@@ -6,8 +6,10 @@ This module includes the codec implementation for excel data sources.
 
 import logging
 import pandas as pd
+import numpy as np
 import xlsxwriter
 from infocentre_data_manager.plugins.codecs.base import Codec
+from infocentre_data_manager.plugins.semantic_types.base import SemanticType
 
 __all__ = ['ExcelCodec', ]
 
@@ -34,11 +36,14 @@ class ExcelCodec(Codec):
 
         variables = pd.read_excel(excel_file, sheet_name='VARIABLES')
         data = pd.read_excel(excel_file, sheet_name='DATA')
+        data = data.astype(str)
+        data['id'] = data['id'].astype(int)
         sources = pd.read_excel(excel_file, sheet_name='SOURCES')
         notes = pd.read_excel(excel_file, sheet_name='NOTES')
         methods = pd.read_excel(excel_file, sheet_name='METHODS')
         years = pd.read_excel(excel_file, sheet_name='YEARS')
         dates = pd.read_excel(excel_file, sheet_name='DATES')
+        variables.fillna('', inplace=True)
         dates.replace('nan', '')
 
         return {
@@ -115,6 +120,9 @@ class ExcelCodec(Codec):
                             'COMMENTS',),
                            cell_format=label_format)
         general_data = data['general'].iloc[0, :]
+        general_data = general_data.loc[[
+            'table_name', 'contents', 'data_manager', 'comments'
+        ]]
         sheet.write_column('B5',
                            general_data,
                            cell_format=value_format)
@@ -125,6 +133,7 @@ class ExcelCodec(Codec):
         sheet.set_column(1, 1, 55)
         sheet.set_column(2, 2, 75)
         sheet.set_column(3, 3, 30)
+
         for i in range(len(data['variables'])):
             sheet.set_row(i, 20)
         header_format = workbook.add_format({
@@ -135,18 +144,22 @@ class ExcelCodec(Codec):
             'font_color': 'white'
         })
 
+        variable_columns = ['variable', 'type', 'description']
         sheet.write_row('A1',
-                        (
-                            'variable',
-                            'description',
-                            'type',
-                        ),
+                        variable_columns,
                         cell_format=header_format)
 
+        available_types = list(SemanticType.get_plugins().keys())
+        sheet.data_validation(1, 1, len(data['variables']), 1,
+                              {
+                                  'validate': 'list',
+                                  'source': available_types,
+                              })
+
         data['variables'] = data['variables'].fillna('')
-        for i, column in enumerate(data['variables'].columns):
+        for i, column in enumerate(variable_columns):
             cell_format = None
-            if i == 0:
+            if column in ['variable', 'type']:
                 cell_format = workbook.add_format({
                     'bold':     True,
                     'fg_color': '#EAEAEA',
