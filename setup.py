@@ -45,24 +45,20 @@ setup(
     ],
     entry_points={
         'data_manager.codecs': [
-            'excel=infocentre_data_manager.plugins.codecs.excel:'
-            'ExcelCodec',
-            'mysql=infocentre_data_manager.plugins.codecs.mysql:'
-            'MySQLCodec',
+            'excel=infocentre_data_manager.plugins.codecs.excel:ExcelCodec',
+            'old_excel=infocentre_data_manager.plugins.codecs.old_excel:OldExcelCodec',
+            'mysql=infocentre_data_manager.plugins.codecs.mysql:MySQLCodec',
         ],
         'data_manager.data_validators': [
-            'null=infocentre_data_manager.plugins.data_validators.null:'
-            'NullValidator',
-            'basic=infocentre_data_manager.plugins.data_validators.basic:'
-            'BasicValidator',
-            'type=infocentre_data_manager.plugins.data_validators.type:'
-            'TypeValidator',
-            'missing_values=infocentre_data_manager.plugins.data_validators.missing_values:'
-            'MissingValuesValidator',
+            'null=infocentre_data_manager.plugins.data_validators.null:NullValidator',
+            'basic=infocentre_data_manager.plugins.data_validators.basic:BasicValidator',
+            'type=infocentre_data_manager.plugins.data_validators.type:TypeValidator',
+            'missing_values=infocentre_data_manager.plugins.data_validators.missing_values:MissingValuesValidator',
         ],
         'data_manager.semantic_types': [
-            'integer=infocentre_data_manager.plugins.semantic_types.integer:'
-            'IntegerType',
+            'integer=infocentre_data_manager.plugins.semantic_types.integer:IntegerType',
+            'string=infocentre_data_manager.plugins.semantic_types.string:StringType',
+            'iso=infocentre_data_manager.plugins.semantic_types.iso:IsoType',
         ],
     },
 )
