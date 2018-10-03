@@ -10,9 +10,12 @@ import datetime
 import pandas as pd
 import numpy as np
 import pymysql.cursors
+from pymysql import ProgrammingError
 from infocentre_data_manager.plugins.codecs.base import Codec
 
 __all__ = ['MySQLCodec', ]
+
+logger = logging.getLogger(__name__)
 
 
 class MySQLCodec(Codec):
@@ -20,8 +23,6 @@ class MySQLCodec(Codec):
     Plugin that implements the HPV Information Centre data loading from and
     storing to MySQL data sources.
     """
-
-    BATCH_SIZE = 20
 
     def load(self, **kwargs):
         host = kwargs['host']
@@ -104,15 +105,21 @@ class MySQLCodec(Codec):
         )
         date_types = ['date_accessed', 'date_closing',
                       'date_delivery', 'date_published']
-        for date_type in date_types:
-            if dates.loc[0, date_type] is not None:
-                dates.loc[0, date_type] = \
-                    dates.loc[0, date_type].strftime('%d/%m/%Y')
-            else:
-                dates.loc[0, date_type] = ''
+        if len(dates.index) > 0:
+            for date_type in date_types:
+                if dates.iloc[0, :][date_type] is not None:
+                    dates.iloc[0, :][date_type] = \
+                        dates.iloc[0, :][date_type].strftime('%d/%m/%Y')
+                else:
+                    dates.iloc[0, :][date_type] = ''
         return dates
 
-    def store(self, data, **kwargs):
+    def store(self,
+              data,
+              batch_size=100,
+              varchar_size=200,
+              use_temporal_db=True,
+              **kwargs):
         host = kwargs['host']
         db = kwargs['db']
         user = kwargs['user']
@@ -126,9 +133,12 @@ class MySQLCodec(Codec):
                                cursorclass=pymysql.cursors.DictCursor)
 
         try:
+            if kwargs.get('create_table', False):
+                self._create_table(conn, data, varchar_size, use_temporal_db)
+                conn.commit()
             self._store_general_data(conn, data)
             self._store_variable_data(conn, data)
-            self._store_raw_data(conn, data)
+            self._store_raw_data(conn, data, batch_size)
             self._store_ref_data(conn, data, 'sources')
             self._store_ref_data(conn, data, 'notes')
             self._store_ref_data(conn, data, 'methods')
@@ -141,6 +151,53 @@ class MySQLCodec(Codec):
 
         conn.close()
 
+    def _create_table(self,
+                      conn,
+                      data,
+                      varchar_size,
+                      use_temporal_db,
+                      char_type=None):
+        columns_clause = []
+        if char_type is None:
+            char_type = 'varchar({})'.format(varchar_size)
+        for col in data['variables'].itertuples():
+            if col.variable == 'id':
+                col_clause = 'id INT'
+            else:
+                col_clause = '`{}` {}'.format(
+                    col.variable, char_type
+                )
+            columns_clause.append(col_clause)
+
+        table_name = data['general']['table_name'].iloc[0]
+        sql_string = ('CREATE TABLE {} '
+                      '({}, CONSTRAINT {}_PK PRIMARY KEY (id)) '
+                      'ENGINE=InnoDB DEFAULT CHARSET=utf8 '
+                      'COLLATE=utf8_general_ci'.format(
+                          table_name,
+                          ','.join(columns_clause),
+                          table_name
+                      ))
+        #print(sql_string)
+        if use_temporal_db:
+            sql_string += ' WITH SYSTEM VERSIONING'
+
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute(sql_string)
+        except pymysql.err.InternalError as e:
+            if e.args[0] == pymysql.constants.ER.TABLE_EXISTS_ERROR:
+                pass  # Table already exists, skipping generation...
+            elif e.args[0] == pymysql.constants.ER.TOO_BIG_ROWSIZE \
+                    and char_type != 'TEXT':
+                self._create_table(conn,
+                                   data,
+                                   varchar_size,
+                                   use_temporal_db,
+                                   char_type='TEXT')
+            else:
+                raise e from None
+
     def _store_general_data(self, conn, data):
         table_name = data['general']['table_name'].iloc[0]
         data_manager = data['general']['data_manager'].iloc[0]
@@ -151,7 +208,7 @@ class MySQLCodec(Codec):
             module = int(module_strings[0])
         else:
             print('Unknown module, to be determined manually')
-            module = -9999
+            module = -9
 
         # TODO: Category, indicator?
         table_row = pd.read_sql(
@@ -189,31 +246,67 @@ class MySQLCodec(Codec):
                     [table_name, var.variable, var.description, var.type, i]
                     )
 
-    def _store_raw_data(self, conn, data):
+    def _store_raw_data(self, conn, data, batch_size):
         table_name = data['general']['table_name'].iloc[0]
 
+        table_data = pd.read_sql(
+            'SELECT * FROM {}'.format(table_name), con=conn)
+        db_ids = set(table_data['id'])
+        excel_ids = set(data['data']['id'])
+        ids_to_delete = list(db_ids.difference(excel_ids))
+        ids_to_replace = list(excel_ids.difference(db_ids))
+        ids_changed = list(set(pd.concat([table_data, data['data']]).
+                               drop_duplicates(keep=False)['id'].astype(str)))
+        ids_changed = [int(id) for id in ids_changed
+                       if int(id) not in ids_to_delete]
+
+        if len(ids_changed) > 0:
+            logger.debug(
+                'Rows inserted or updated for table {}: ids = {}'.format(
+                    table_name, ', '.join(
+                        [str(id) for id in ids_changed]
+                    )
+                )
+            )
+        if len(ids_to_delete) > 0:
+            logger.debug('Rows deleted from table {}: ids = {}'.format(
+                table_name, ', '.join(
+                    [str(id) for id in ids_to_delete]
+                )
+            ))
+
         try:
-            conn.query('DELETE FROM {}'.format(table_name))
+            for i in range(0, len(ids_to_delete), batch_size + 1):
+                upper_bound = i + batch_size
+                ids_to_delete_str = [str(id) for id in ids_to_delete]
+                conn.query('DELETE FROM {} WHERE id IN ({})'.format(
+                    table_name,
+                    ','.join(ids_to_delete_str[i:upper_bound])))
         except ProgrammingError:
             raise EnvironmentError(
-                "Table '{}' does not exist, create it first.")
+                "Table '{}' does not exist, create it first.".format(
+                    table_name
+                ))
 
-        n_rows = len(data['data'].index)
-        for i in range(0, len(data['data'].index), MySQLCodec.BATCH_SIZE + 1):
+        data['data'].index = data['data']['id']
+        df_to_replace = data['data'].loc[ids_changed, :]
+
+        for i in range(0, len(df_to_replace.index), batch_size + 1):
             with conn.cursor() as cursor:
                 # TODO: Refactor insert string generation
-                cursor.execute('INSERT INTO {} ({}) VALUES {}'.format(
+                cursor.execute('REPLACE INTO {} ({}) VALUES {}'.format(
                     table_name,
-                    ','.join(data['data'].columns),
+                    ','.join(['`{}`'.format(col)
+                              for col in df_to_replace.columns]),
                     ','.join(['({})'.format(','.join(
                                 ["'" + v.replace("'", "\\'") + "'"
                                     if isinstance(v, str) else str(v)
                                  for v in row[1].values]))
                              for row
-                             in data['data'].loc[
+                             in df_to_replace.iloc[
                                 i:min(
-                                    n_rows,
-                                    i + MySQLCodec.BATCH_SIZE
+                                    len(df_to_replace.index),
+                                    i + batch_size
                                     ), :
                              ].iterrows()
                              ]
@@ -227,7 +320,7 @@ class MySQLCodec(Codec):
         for ref in ref_values:
             existing_ref = pd.read_sql(
                 'SELECT value FROM ref_{} WHERE value = %s'.format(ref_type),
-                params=[ref],
+                params=[str(ref)],
                 con=conn
             )
             if len(existing_ref) == 0:
@@ -235,7 +328,7 @@ class MySQLCodec(Codec):
                     cursor.execute(
                         'INSERT INTO ref_{} (value) VALUES (%s)'.format(
                             ref_type),
-                        [ref]
+                        [str(ref)]
                         )
 
         with conn.cursor() as cursor:
@@ -243,7 +336,6 @@ class MySQLCodec(Codec):
                 'DELETE FROM ref_{}_by WHERE data_table = %s'.format(ref_type),
                 [table_name])
 
-        n_rows = len(data[ref_type].index)
         for row in data[ref_type].itertuples():
             with conn.cursor() as cursor:
                 cursor.execute(
@@ -253,7 +345,7 @@ class MySQLCodec(Codec):
                     ' (SELECT id FROM ref_{} WHERE value=%s))'.format(
                         ref_type, ref_type[:-1], ref_type),
                     [row.iso, row.strata_variable, row.strata_value,
-                     row.applyto_variable, table_name, row.value])
+                     row.applyto_variable, table_name, str(row.value)])
 
     def _store_dates_data(self, conn, data):
         table_name = data['general']['table_name'].iloc[0]
