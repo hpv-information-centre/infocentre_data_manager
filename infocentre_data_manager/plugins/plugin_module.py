@@ -57,7 +57,7 @@ class PluginModule(object, metaclass=PluginModuleMeta):
         :returns: Plugin
         :rtype: PluginModule
         """
-        class_dict = cls._get_plugins()
+        class_dict = cls.get_plugins()
         if id:
             fetcher_id = None
             try:
@@ -84,11 +84,11 @@ class PluginModule(object, metaclass=PluginModuleMeta):
             return cls._get_default_handler(**kwargs)
         except NotImplementedError:
             raise NotImplementedError(
-                'There is no default {} for extension .{}'.format(
+                'There is no default {} for {}'.format(
                     cls.__name__, id))
 
     @classmethod
-    def _get_plugins(cls):
+    def get_plugins(cls):
         """
         Returns the plugins of cls defined on the entry_point
         'data_manager.<plugin_class>'.
