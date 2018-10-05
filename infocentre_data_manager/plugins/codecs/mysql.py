@@ -24,6 +24,10 @@ class MySQLCodec(Codec):
     storing to MySQL data sources.
     """
 
+    # When creating a database column, if the current data exceeds this
+    # size a TEXT type is assigned instead.
+    VARCHAR_SIZE = 200
+
     def load(self, **kwargs):
         host = kwargs['host']
         db = kwargs['db']
@@ -117,7 +121,6 @@ class MySQLCodec(Codec):
     def store(self,
               data,
               batch_size=100,
-              varchar_size=200,
               use_temporal_db=True,
               **kwargs):
         host = kwargs['host']
@@ -134,7 +137,7 @@ class MySQLCodec(Codec):
 
         try:
             if kwargs.get('create_table', False):
-                self._create_table(conn, data, varchar_size, use_temporal_db)
+                self._create_table(conn, data, use_temporal_db)
                 conn.commit()
             self._store_general_data(conn, data)
             self._store_variable_data(conn, data)
@@ -154,18 +157,27 @@ class MySQLCodec(Codec):
     def _create_table(self,
                       conn,
                       data,
-                      varchar_size,
                       use_temporal_db,
-                      char_type=None):
+                      default_char_type=None):
         columns_clause = []
-        if char_type is None:
-            char_type = 'varchar({})'.format(varchar_size)
+        if default_char_type is None:
+            default_char_type = 'varchar({})'.format(MySQLCodec.VARCHAR_SIZE)
         for col in data['variables'].itertuples():
             if col.variable == 'id':
-                col_clause = 'id INT'
+                col_clause = 'id INT COMMENT \'{}\''.format(
+                    col.description.replace('\'', '\'\'')
+                )
             else:
-                col_clause = '`{}` {}'.format(
-                    col.variable, char_type
+                max_length_col_data = \
+                    data['data'][col.variable].str.len().max()
+                if max_length_col_data > MySQLCodec.VARCHAR_SIZE:
+                    char_type = 'TEXT'
+                else:
+                    char_type = default_char_type
+                col_clause = '`{}` {} COMMENT \'{}\''.format(
+                    col.variable,
+                    char_type,
+                    col.description.replace('\'', '\'\'')
                 )
             columns_clause.append(col_clause)
 
@@ -178,7 +190,6 @@ class MySQLCodec(Codec):
                           ','.join(columns_clause),
                           table_name
                       ))
-        #print(sql_string)
         if use_temporal_db:
             sql_string += ' WITH SYSTEM VERSIONING'
 
@@ -192,9 +203,8 @@ class MySQLCodec(Codec):
                     and char_type != 'TEXT':
                 self._create_table(conn,
                                    data,
-                                   varchar_size,
                                    use_temporal_db,
-                                   char_type='TEXT')
+                                   default_char_type='TEXT')
             else:
                 raise e from None
 
