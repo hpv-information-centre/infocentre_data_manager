@@ -25,7 +25,7 @@ setup(
                 'Centre scientific databases.',
     long_description=README,
     url='https://www.hpvcentre.net',
-    author='David Gómez',
+    author='David Gomez',
     author_email='info@hpvcenter.net',
     classifiers=[
         'Intended Audience :: Developers',

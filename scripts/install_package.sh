@@ -3,7 +3,7 @@
 BASE_DIR=`dirname $(readlink -f $0)`/..
 cd $BASE_DIR
 mkdir $BASE_DIR/build
-python $BASE_DIR/setup.py sdist
+python3 $BASE_DIR/setup.py sdist
 pip install -U --user -b $BASE_DIR/build $BASE_DIR/dist/*
 rm -R $BASE_DIR/dist
 rm -R $BASE_DIR/*.egg-info
