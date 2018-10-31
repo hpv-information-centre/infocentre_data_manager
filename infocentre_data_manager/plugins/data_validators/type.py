@@ -41,19 +41,22 @@ class TypeValidator(DataValidator):
                 is_valid = type_validator.check(value)
                 if not is_valid:
                     n_errors += 1
-                    invalid_ids.append(data_df.iloc[i]['id'])
+                    invalid_ids.append(
+                        (data_df.iloc[i]['id'],
+                         data_df.iloc[i][var])
+                    )
             if n_errors > 0:
-                invalid_ids = sorted(invalid_ids)
-                invalid_ids_str = [str(id)
-                                   for id
+                invalid_ids = sorted(invalid_ids, key=lambda x: x[0])
+                invalid_ids_str = ['{} ("{}")'.format(id, value)
+                                   for id, value
                                    in invalid_ids[
                                        :TypeValidator.MAX_N_ERRORS_DISPLAYED
                                    ]]
                 if len(invalid_ids) > TypeValidator.MAX_N_ERRORS_DISPLAYED:
                     invalid_ids_str.append('...')
                 errors.append(
-                    '"{}" (type "{}") has {} invalid values in rows '
-                    'with id(s) {}.'.format(
+                    'Variable "{}" (type "{}") has {} invalid values '
+                    'in rows {}.'.format(
                         var,
                         var_type,
                         n_errors,
