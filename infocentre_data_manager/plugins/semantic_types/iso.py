@@ -17,9 +17,11 @@ class IsoType(SemanticType):
     Plugin that implements the definition of ISO3 codes.
     """
 
-    def __init__(self):
-        conn = pymysql.connect(read_default_file='/home/david/db.cnf',
-                               read_default_group='infocentre_epi',
+    def __init__(self, **kwargs):
+        conn = pymysql.connect(host=kwargs['HOST'],
+                               user=kwargs['USER'],
+                               password=kwargs['PASSWORD'],
+                               db=kwargs['NAME'],
                                charset='utf8',
                                cursorclass=pymysql.cursors.DictCursor)
         self.available_isos = \

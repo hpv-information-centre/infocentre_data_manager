@@ -73,7 +73,7 @@ class PluginModule(object, metaclass=PluginModuleMeta):
                 pass  # If type is not defined we try the default plugin
 
             try:
-                return class_dict[fetcher_id]()
+                return class_dict[fetcher_id](**kwargs)
             except KeyError:
                 raise NotImplementedError(
                     'Plugin "{}" is not available. Check if the plugin '

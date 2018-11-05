@@ -34,8 +34,10 @@ class DataValidator(PluginModule):
             applied.
         """
         results = {}
-        for id in validators:
-            validator = DataValidator.get(id)
+        for validator in validators:
+            id = validator['name']
+            kwargs = validator['args']
+            validator = DataValidator.get(id, **kwargs)
             results[id] = validator.validate(data_dict)
             results[id]['type'] = getattr(validator,
                                           'name',
