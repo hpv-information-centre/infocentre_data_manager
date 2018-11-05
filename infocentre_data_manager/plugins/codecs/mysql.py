@@ -113,7 +113,7 @@ class MySQLCodec(Codec):
             for date_type in date_types:
                 if dates.iloc[0, :][date_type] is not None:
                     dates.iloc[0, :][date_type] = \
-                        dates.iloc[0, :][date_type].strftime('%d/%m/%Y')
+                        dates.iloc[0, :][date_type].strftime('%d-%m-%Y')
                 else:
                     dates.iloc[0, :][date_type] = ''
         return dates
@@ -379,10 +379,14 @@ class MySQLCodec(Codec):
                     [row.iso, row.strata_variable, row.strata_value,
                      row.applyto_variable, table_name,
                      row.date_accessed
-                        if isinstance(row.date_accessed, str) else None,
+                        if isinstance(row.date_accessed, str) and
+                        row.date_accessed != '' else None,
                      row.date_closing
-                        if isinstance(row.date_closing, str) else None,
+                        if isinstance(row.date_closing, str) and
+                        row.date_closing != '' else None,
                      row.date_delivery
-                        if isinstance(row.date_delivery, str) else None,
+                        if isinstance(row.date_delivery, str) and
+                        row.date_delivery != '' else None,
                      row.date_published
-                        if isinstance(row.date_published, str) else None])
+                        if isinstance(row.date_published, str) and
+                        row.date_published != '' else None])
