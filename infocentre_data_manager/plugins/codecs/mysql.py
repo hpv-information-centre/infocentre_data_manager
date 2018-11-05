@@ -121,7 +121,7 @@ class MySQLCodec(Codec):
     def store(self,
               data,
               batch_size=100,
-              use_temporal_db=True,
+              use_temporal_db=False,
               **kwargs):
         host = kwargs['host']
         db = kwargs['db']
