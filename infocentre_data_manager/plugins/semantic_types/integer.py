@@ -15,6 +15,9 @@ class IntegerType(SemanticType):
     Plugin that implements the definition of integers.
     """
 
+    def __init__(self, **kwargs):
+        pass
+
     def check(self, value, **kwargs):
         try:
             int(value)

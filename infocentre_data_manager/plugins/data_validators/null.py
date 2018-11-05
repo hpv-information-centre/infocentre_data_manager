@@ -18,6 +18,9 @@ class NullValidator(DataValidator):
 
     name = 'Null validator'
 
+    def __init__(self, **kwargs):
+        pass
+
     def validate(self, data_dict, **kwargs):
         info = kwargs.get('info', ['Info example'])
         warnings = kwargs.get('warnings',

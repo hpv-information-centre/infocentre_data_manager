@@ -19,6 +19,9 @@ class BasicValidator(DataValidator):
 
     name = 'Basic validator'
 
+    def __init__(self, **kwargs):
+        pass
+
     def validate(self, data_dict, **kwargs):
         self.info = []
         self.warnings = []

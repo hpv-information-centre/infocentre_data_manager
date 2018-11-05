@@ -21,6 +21,9 @@ class TypeValidator(DataValidator):
 
     MAX_N_ERRORS_DISPLAYED = 10
 
+    def __init__(self, **kwargs):
+        self.type_validator_args = kwargs
+
     def validate(self, data_dict, **kwargs):
         info = []
         warnings = []
@@ -36,7 +39,8 @@ class TypeValidator(DataValidator):
             var_type = var_type.iloc[0]['type']
             if var_type == '':
                 var_type = 'string'
-            type_validator = SemanticType.get(var_type)
+            type_validator = SemanticType.get(var_type,
+                                              **self.type_validator_args)
             for i, value in enumerate(data_df[var]):
                 is_valid = type_validator.check(value)
                 if not is_valid:

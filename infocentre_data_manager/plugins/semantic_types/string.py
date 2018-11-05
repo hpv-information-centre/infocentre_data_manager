@@ -15,6 +15,9 @@ class StringType(SemanticType):
     Plugin that implements the definition of strings.
     """
 
+    def __init__(self, **kwargs):
+        pass
+
     def check(self, value, **kwargs):
         return True
 

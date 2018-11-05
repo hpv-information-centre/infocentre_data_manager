@@ -18,6 +18,9 @@ class MissingValuesValidator(DataValidator):
 
     name = 'Missing values validator'
 
+    def __init__(self, **kwargs):
+        pass
+
     def validate(self, data_dict, **kwargs):
         raise NotImplementedError(
             'Data validation not implemented for {}'.format(self.__class__))
