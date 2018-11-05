@@ -37,6 +37,7 @@ setup(
         'Programming Language :: Python :: 3.5',
     ],
     install_requires=[
+        'xlsxwriter',
         'sphinx-autoapi',
         'setuptools',
         'sphinx',
