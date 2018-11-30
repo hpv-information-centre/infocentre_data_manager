@@ -113,7 +113,7 @@ class MySQLCodec(Codec):
             for date_type in date_types:
                 if dates.iloc[0, :][date_type] is not None:
                     dates.iloc[0, :][date_type] = \
-                        dates.iloc[0, :][date_type].strftime('%d-%m-%Y')
+                        dates.iloc[0, :][date_type].strftime('%Y-%m-%d')
                 else:
                     dates.iloc[0, :][date_type] = ''
         return dates
@@ -372,10 +372,10 @@ class MySQLCodec(Codec):
                     'strata_value, applyto_variable, data_table, '
                     'date_accessed, date_closing, date_delivery, '
                     'date_published) VALUES (%s, %s, %s, %s, %s, '
-                    'STR_TO_DATE(%s, "%%d-%%m-%%Y"), '
-                    'STR_TO_DATE(%s, "%%d-%%m-%%Y"), '
-                    'STR_TO_DATE(%s, "%%d-%%m-%%Y"), '
-                    'STR_TO_DATE(%s, "%%d-%%m-%%Y"))',
+                    'STR_TO_DATE(%s, "%%Y-%%m-%%d"), '
+                    'STR_TO_DATE(%s, "%%Y-%%m-%%d"), '
+                    'STR_TO_DATE(%s, "%%Y-%%m-%%d"), '
+                    'STR_TO_DATE(%s, "%%Y-%%m-%%d"))',
                     [row.iso, row.strata_variable, row.strata_value,
                      row.applyto_variable, table_name,
                      row.date_accessed
