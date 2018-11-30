@@ -37,12 +37,12 @@ setup(
         'Programming Language :: Python :: 3.5',
     ],
     install_requires=[
-        'xlsxwriter',
-        'sphinx-autoapi',
-        'setuptools',
-        'sphinx',
-        'autoapi',
-        'sphinxcontrib-websupport'
+        'xlsxwriter>=1.0.2',
+        'sphinx-autoapi>=0.5.0',
+        'setuptools>=39.2.0',
+        'sphinx>=1.7.5',
+        'autoapi>=1.3.1',
+        'sphinxcontrib-websupport>=1.0.1'
     ],
     entry_points={
         'data_manager.codecs': [
