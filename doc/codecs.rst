@@ -1,26 +1,25 @@
-.. _`data_parsing`: 
+.. _`codecs`: 
 
-Data parsing
+Data codecs
 ===============
 
-These modules load or store the HPV Information Centre data tables and its corresponding references via a particular interface (excel files, SQL, ...). By using these, scientific data can be easily translated between different formats.
-
+The codec modules will load or store the HPV Information Centre data tables and its corresponding references via a particular interface (excel files, SQL, ...). By using these, scientific data can be easily translated between different formats. For a more convenient conversion between formats, the *convert* method is available (see API reference).
 
 
 Intermediate data representation
 ---------------------------------
 
-As an intermediate data representation between the loading and storing, a python dictionary with the following keys should be expected. Besides these, other values can be stored but with no guarantees that each parser will consider them and therefore can potentially be lost.
+A python dictionary with the following structure should be built by each codec's load method. Besides these, other values can be added but with no guarantees that other codecs will consider them and therefore the information can potentially be lost.
 
 * **general**: A single row dataframe with the following columns:
-   * **table_name**: The table name.
+   * **table_name**: The table name. If the name contains '_m*_' the corresponding number will be extracted as the data module.
    * **contents**: A description of the table contents.
    * **data_manager**: The person/people responsible for the table maintenance.
    * **comments**: Comments about the table.
 * **variables**: A dataframe with the following columns:
    * **variable**: Name of the variable, used as identifier.
    * **description**: Description of the variable.
-   * **type**: Type of the variable (will be used by type validators, see :ref:`data_validation`).
+   * **type**: Semantic type of the variable (will be used by type validators, see :ref:`data_validation`).
 * **data**: A dataframe with the actual scientific data. Its columns should match those defined in the **variables** dictionary.
 * **sources**: A dataframe with the sources associated with the data. Its columns should be:
    * **iso**: ISO3 code of the region associated with that source. A ``-99`` value indicates that the source applies to all regions.

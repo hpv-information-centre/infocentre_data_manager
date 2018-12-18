@@ -25,7 +25,7 @@ setup(
                 'Centre scientific databases.',
     long_description=README,
     url='https://www.hpvcentre.net',
-    author='David Gómez',
+    author='David Gomez',
     author_email='info@hpvcenter.net',
     classifiers=[
         'Intended Audience :: Developers',
@@ -37,22 +37,29 @@ setup(
         'Programming Language :: Python :: 3.5',
     ],
     install_requires=[
-        'sphinx-autoapi',
-        'setuptools',
-        'sphinx',
-        'autoapi',
-        'sphinxcontrib-websupport'
+        'xlsxwriter>=1.0.2',
+        'sphinx-autoapi>=0.5.0',
+        'setuptools>=39.2.0',
+        'sphinx>=1.7.5',
+        'autoapi>=1.3.1',
+        'sphinxcontrib-websupport>=1.0.1'
     ],
     entry_points={
         'data_manager.codecs': [
-            'excel=infocentre_data_manager.plugins.codecs.excel:'
-            'ExcelParser',
-            'mysql=infocentre_data_manager.plugins.codecs.mysql:'
-            'MySQLParser',
+            'excel=infocentre_data_manager.plugins.codecs.excel:ExcelCodec',
+            'old_excel=infocentre_data_manager.plugins.codecs.old_excel:OldExcelCodec',
+            'mysql=infocentre_data_manager.plugins.codecs.mysql:MySQLCodec',
         ],
         'data_manager.data_validators': [
-            'type=infocentre_data_manager.plugins.data_validators.type:'
-            'TypeValidator',
+            'null=infocentre_data_manager.plugins.data_validators.null:NullValidator',
+            'basic=infocentre_data_manager.plugins.data_validators.basic:BasicValidator',
+            'type=infocentre_data_manager.plugins.data_validators.type:TypeValidator',
+            'missing_values=infocentre_data_manager.plugins.data_validators.missing_values:MissingValuesValidator',
+        ],
+        'data_manager.semantic_types': [
+            'integer=infocentre_data_manager.plugins.semantic_types.integer:IntegerType',
+            'string=infocentre_data_manager.plugins.semantic_types.string:StringType',
+            'iso=infocentre_data_manager.plugins.semantic_types.iso:IsoType',
         ],
     },
 )

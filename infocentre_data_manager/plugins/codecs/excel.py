@@ -1,18 +1,20 @@
-""" base.py
+""" excel.py
 
-This module includes the base plugin interface for data fetchers.
+This module includes the codec implementation for excel data sources.
 
 """
 
 import logging
 import pandas as pd
+import numpy as np
 import xlsxwriter
 from infocentre_data_manager.plugins.codecs.base import Codec
+from infocentre_data_manager.plugins.semantic_types.base import SemanticType
 
-__all__ = ['ExcelParser', ]
+__all__ = ['ExcelCodec', ]
 
 
-class ExcelParser(Codec):
+class ExcelCodec(Codec):
     """
     Plugin that implements the HPV Information Centre data loading from and
     storing to different data sources.
@@ -33,12 +35,29 @@ class ExcelParser(Codec):
                            'comments']
 
         variables = pd.read_excel(excel_file, sheet_name='VARIABLES')
+        variables.fillna('', inplace=True)
         data = pd.read_excel(excel_file, sheet_name='DATA')
+        data = data.astype(str)
+        data['id'] = data['id'].astype(int)
         sources = pd.read_excel(excel_file, sheet_name='SOURCES')
         notes = pd.read_excel(excel_file, sheet_name='NOTES')
         methods = pd.read_excel(excel_file, sheet_name='METHODS')
         years = pd.read_excel(excel_file, sheet_name='YEARS')
+
+        def _date_to_string(dt):
+            if dt == '-9999' or dt == -9999:
+                return '-9999'
+            return dt.strftime('%Y-%m-%d')
+
         dates = pd.read_excel(excel_file, sheet_name='DATES')
+        dates.loc[0, 'date_accessed'] = \
+            _date_to_string(dates.loc[0, 'date_accessed'])
+        dates.loc[0, 'date_closing'] = \
+            _date_to_string(dates.loc[0, 'date_closing'])
+        dates.loc[0, 'date_delivery'] = \
+            _date_to_string(dates.loc[0, 'date_delivery'])
+        dates.loc[0, 'date_published'] = \
+            _date_to_string(dates.loc[0, 'date_published'])
 
         return {
             'general': general,
@@ -113,7 +132,10 @@ class ExcelParser(Codec):
                             'DATA MANAGER',
                             'COMMENTS',),
                            cell_format=label_format)
-        general_data = data['general'].loc[1, :]
+        general_data = data['general'].iloc[0, :]
+        general_data = general_data.loc[[
+            'table_name', 'contents', 'data_manager', 'comments'
+        ]]
         sheet.write_column('B5',
                            general_data,
                            cell_format=value_format)
@@ -124,6 +146,7 @@ class ExcelParser(Codec):
         sheet.set_column(1, 1, 55)
         sheet.set_column(2, 2, 75)
         sheet.set_column(3, 3, 30)
+
         for i in range(len(data['variables'])):
             sheet.set_row(i, 20)
         header_format = workbook.add_format({
@@ -134,18 +157,22 @@ class ExcelParser(Codec):
             'font_color': 'white'
         })
 
+        variable_columns = ['variable', 'type', 'description']
         sheet.write_row('A1',
-                        (
-                            'Variable',
-                            'Description',
-                            'Type',
-                        ),
+                        variable_columns,
                         cell_format=header_format)
 
+        available_types = list(SemanticType.get_plugins().keys())
+        sheet.data_validation(1, 1, len(data['variables']), 1,
+                              {
+                                  'validate': 'list',
+                                  'source': available_types,
+                              })
+
         data['variables'] = data['variables'].fillna('')
-        for i, column in enumerate(data['variables'].columns):
+        for i, column in enumerate(variable_columns):
             cell_format = None
-            if i == 0:
+            if column in ['variable', 'type']:
                 cell_format = workbook.add_format({
                     'bold':     True,
                     'fg_color': '#EAEAEA',

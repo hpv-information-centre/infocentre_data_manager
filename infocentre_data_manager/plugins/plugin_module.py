@@ -29,7 +29,7 @@ class PluginModule(object, metaclass=PluginModuleMeta):
     subclasses of this module represent different stages and they have a
     factory method that scans their directory (e.g. codecs,
     data_validators, ...) and instantiates a particular subsubclass (e.g.
-    ExcelParser) with only their name (e.g. 'excel'). For new
+    ExcelCodec) with only their name (e.g. 'excel'). For new
     plugins of a particular type this doesn't require any imports; this
     class automatically scans the directory for suitable modules and
     classes."""
@@ -57,7 +57,7 @@ class PluginModule(object, metaclass=PluginModuleMeta):
         :returns: Plugin
         :rtype: PluginModule
         """
-        class_dict = cls._get_plugins()
+        class_dict = cls.get_plugins()
         if id:
             fetcher_id = None
             try:
@@ -73,7 +73,7 @@ class PluginModule(object, metaclass=PluginModuleMeta):
                 pass  # If type is not defined we try the default plugin
 
             try:
-                return class_dict[fetcher_id]()
+                return class_dict[fetcher_id](**kwargs)
             except KeyError:
                 raise NotImplementedError(
                     'Plugin "{}" is not available. Check if the plugin '
@@ -84,11 +84,11 @@ class PluginModule(object, metaclass=PluginModuleMeta):
             return cls._get_default_handler(**kwargs)
         except NotImplementedError:
             raise NotImplementedError(
-                'There is no default {} for extension .{}'.format(
+                'There is no default {} for {}'.format(
                     cls.__name__, id))
 
     @classmethod
-    def _get_plugins(cls):
+    def get_plugins(cls):
         """
         Returns the plugins of cls defined on the entry_point
         'data_manager.<plugin_class>'.
