@@ -4,7 +4,7 @@ from setuptools import find_packages, setup
 import sys
 
 sys.path.insert(0, os.path.abspath(__file__))
-from reportcompiler_ic_tools import __version__
+from infocentre_data_manager import __version__
 
 module_name = 'infocentre-data-manager'
 module_dir_name = 'infocentre_data_manager'
@@ -22,10 +22,10 @@ setup(
                 'provide methods and utilities to upload scientific data '
                 'from different sources and perform different (pluggable) '
                 'data validation procedures to update the HPV Information '
-                'Centre scientific databases.'
+                'Centre scientific databases.',
     long_description=README,
     url='https://www.hpvcentre.net',
-    author='David Gómez',
+    author='David Gomez',
     author_email='info@hpvcenter.net',
     classifiers=[
         'Intended Audience :: Developers',
@@ -37,17 +37,29 @@ setup(
         'Programming Language :: Python :: 3.5',
     ],
     install_requires=[
+        'xlsxwriter>=1.0.2',
+        'sphinx-autoapi>=0.5.0',
+        'setuptools>=39.2.0',
+        'sphinx>=1.7.5',
+        'autoapi>=1.3.1',
+        'sphinxcontrib-websupport>=1.0.1'
     ],
     entry_points={
-        'data_manager.data_parsers': [
-            'excel=infocentre_data_manager.plugins.data_parsers.excel:'
-            'ExcelParser',
-            'mysql=infocentre_data_manager.plugins.data_parsers.mysql:'
-            'MySQLParser',
+        'data_manager.codecs': [
+            'excel=infocentre_data_manager.plugins.codecs.excel:ExcelCodec',
+            'old_excel=infocentre_data_manager.plugins.codecs.old_excel:OldExcelCodec',
+            'mysql=infocentre_data_manager.plugins.codecs.mysql:MySQLCodec',
         ],
         'data_manager.data_validators': [
-            'type=infocentre_data_manager.plugins.data_validators.type:'
-            'TypeValidator',
+            'null=infocentre_data_manager.plugins.data_validators.null:NullValidator',
+            'basic=infocentre_data_manager.plugins.data_validators.basic:BasicValidator',
+            'type=infocentre_data_manager.plugins.data_validators.type:TypeValidator',
+            'missing_values=infocentre_data_manager.plugins.data_validators.missing_values:MissingValuesValidator',
+        ],
+        'data_manager.semantic_types': [
+            'integer=infocentre_data_manager.plugins.semantic_types.integer:IntegerType',
+            'string=infocentre_data_manager.plugins.semantic_types.string:StringType',
+            'iso=infocentre_data_manager.plugins.semantic_types.iso:IsoType',
         ],
     },
 )
