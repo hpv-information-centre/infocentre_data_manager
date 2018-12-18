@@ -35,6 +35,7 @@ class ExcelCodec(Codec):
                            'comments']
 
         variables = pd.read_excel(excel_file, sheet_name='VARIABLES')
+        variables.fillna('', inplace=True)
         data = pd.read_excel(excel_file, sheet_name='DATA')
         data = data.astype(str)
         data['id'] = data['id'].astype(int)
@@ -42,9 +43,21 @@ class ExcelCodec(Codec):
         notes = pd.read_excel(excel_file, sheet_name='NOTES')
         methods = pd.read_excel(excel_file, sheet_name='METHODS')
         years = pd.read_excel(excel_file, sheet_name='YEARS')
+
+        def _date_to_string(dt):
+            if dt == '-9999' or dt == -9999:
+                return '-9999'
+            return dt.strftime('%Y-%m-%d')
+
         dates = pd.read_excel(excel_file, sheet_name='DATES')
-        variables.fillna('', inplace=True)
-        dates.replace('nan', '')
+        dates.loc[0, 'date_accessed'] = \
+            _date_to_string(dates.loc[0, 'date_accessed'])
+        dates.loc[0, 'date_closing'] = \
+            _date_to_string(dates.loc[0, 'date_closing'])
+        dates.loc[0, 'date_delivery'] = \
+            _date_to_string(dates.loc[0, 'date_delivery'])
+        dates.loc[0, 'date_published'] = \
+            _date_to_string(dates.loc[0, 'date_published'])
 
         return {
             'general': general,

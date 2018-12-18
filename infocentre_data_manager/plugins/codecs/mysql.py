@@ -378,15 +378,11 @@ class MySQLCodec(Codec):
                     'STR_TO_DATE(%s, "%%Y-%%m-%%d"))',
                     [row.iso, row.strata_variable, row.strata_value,
                      row.applyto_variable, table_name,
-                     row.date_accessed
-                        if isinstance(row.date_accessed, str) and
-                        row.date_accessed != '' else None,
-                     row.date_closing
-                        if isinstance(row.date_closing, str) and
-                        row.date_closing != '' else None,
-                     row.date_delivery
-                        if isinstance(row.date_delivery, str) and
-                        row.date_delivery != '' else None,
-                     row.date_published
-                        if isinstance(row.date_published, str) and
-                        row.date_published != '' else None])
+                     row.date_accessed if row.date_accessed != '-9999' \
+                        else None,
+                     row.date_closing if row.date_closing != '-9999' \
+                        else None,
+                     row.date_delivery if row.date_delivery != '-9999' \
+                        else None,
+                     row.date_published if row.date_published != '-9999' \
+                        else None])
