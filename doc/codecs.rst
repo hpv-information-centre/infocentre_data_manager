@@ -30,7 +30,7 @@ A python dictionary with the following structure should be built by each codec's
 * **notes**: A dataframe with the notes associated with the data. Its columns follow the same structure as **sources**.
 * **methods**: A dataframe with the methods associated with the data. Its columns follow the same structure as **sources**.
 * **years**: A dataframe with the estimate years associated with the data. Its columns follow the same structure as **sources**.
-* **dates**: A dataframe with relevant date information about the data. Namely, it has four values:
+* **dates**: A dataframe with relevant date information about the data. It has four values:
    * **date_accessed**: When the source data was accessed by the data managers.
    * **date_closing**: When the source data was valid.
    * **date_published**: When the source data was published in a HPV Information Centre report or other publication.

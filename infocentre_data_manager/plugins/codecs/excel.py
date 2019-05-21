@@ -8,10 +8,13 @@ import logging
 import pandas as pd
 import numpy as np
 import xlsxwriter
+from datetime import datetime
 from infocentre_data_manager.plugins.codecs.base import Codec
 from infocentre_data_manager.plugins.semantic_types.base import SemanticType
 
 __all__ = ['ExcelCodec', ]
+
+logger = logging.getLogger(__name__)
 
 
 class ExcelCodec(Codec):
@@ -34,30 +37,18 @@ class ExcelCodec(Codec):
                            'data_manager',
                            'comments']
 
-        variables = pd.read_excel(excel_file, sheet_name='VARIABLES')
+        excel_content = pd.read_excel(excel_file, sheet_name=None, dtype=str)
+        variables = excel_content['VARIABLES']
         variables.fillna('', inplace=True)
-        data = pd.read_excel(excel_file, sheet_name='DATA')
-        data = data.astype(str)
+        data = excel_content['DATA']
         data['id'] = data['id'].astype(int)
-        sources = pd.read_excel(excel_file, sheet_name='SOURCES')
-        notes = pd.read_excel(excel_file, sheet_name='NOTES')
-        methods = pd.read_excel(excel_file, sheet_name='METHODS')
-        years = pd.read_excel(excel_file, sheet_name='YEARS')
+        sources = excel_content['SOURCES']
+        notes = excel_content['NOTES']
+        methods = excel_content['METHODS']
+        years = excel_content['YEARS']
 
-        def _date_to_string(dt):
-            if dt == '-9999' or dt == -9999:
-                return '-9999'
-            return dt.strftime('%Y-%m-%d')
-
-        dates = pd.read_excel(excel_file, sheet_name='DATES')
-        dates.loc[0, 'date_accessed'] = \
-            _date_to_string(dates.loc[0, 'date_accessed'])
-        dates.loc[0, 'date_closing'] = \
-            _date_to_string(dates.loc[0, 'date_closing'])
-        dates.loc[0, 'date_delivery'] = \
-            _date_to_string(dates.loc[0, 'date_delivery'])
-        dates.loc[0, 'date_published'] = \
-            _date_to_string(dates.loc[0, 'date_published'])
+        dates = excel_content['DATES']
+        dates = dates.replace('nan', '')
 
         return {
             'general': general,

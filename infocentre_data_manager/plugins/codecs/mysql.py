@@ -127,7 +127,6 @@ class MySQLCodec(Codec):
         db = kwargs['db']
         user = kwargs['user']
         password = kwargs['password']
-
         conn = pymysql.connect(host=host,
                                user=user,
                                password=password,
@@ -258,6 +257,7 @@ class MySQLCodec(Codec):
 
     def _store_raw_data(self, conn, data, batch_size):
         table_name = data['general']['table_name'].iloc[0]
+        logger.error('SELECT * FROM {}'.format(table_name))
 
         table_data = pd.read_sql(
             'SELECT * FROM {}'.format(table_name), con=conn)
@@ -304,7 +304,7 @@ class MySQLCodec(Codec):
         for i in range(0, len(df_to_replace.index), batch_size + 1):
             with conn.cursor() as cursor:
                 # TODO: Refactor insert string generation
-                cursor.execute('REPLACE INTO {} ({}) VALUES {}'.format(
+                sql = 'REPLACE INTO {} ({}) VALUES {}'.format(
                     table_name,
                     ','.join(['`{}`'.format(col)
                               for col in df_to_replace.columns]),
@@ -321,7 +321,8 @@ class MySQLCodec(Codec):
                              ].iterrows()
                              ]
                              )
-                ))
+                )
+                cursor.execute(sql)
 
     def _store_ref_data(self, conn, data, ref_type):
         table_name = data['general']['table_name'].iloc[0]
@@ -364,10 +365,9 @@ class MySQLCodec(Codec):
             cursor.execute(
                 'DELETE FROM ref_dates_by WHERE data_table = %s',
                 [table_name])
-
         for row in data['dates'].itertuples():
             with conn.cursor() as cursor:
-                cursor.execute(
+                sql = (
                     'INSERT INTO ref_dates_by (iso, strata_variable, '
                     'strata_value, applyto_variable, data_table, '
                     'date_accessed, date_closing, date_delivery, '
@@ -375,14 +375,24 @@ class MySQLCodec(Codec):
                     'STR_TO_DATE(%s, "%%Y-%%m-%%d"), '
                     'STR_TO_DATE(%s, "%%Y-%%m-%%d"), '
                     'STR_TO_DATE(%s, "%%Y-%%m-%%d"), '
-                    'STR_TO_DATE(%s, "%%Y-%%m-%%d"))',
-                    [row.iso, row.strata_variable, row.strata_value,
-                     row.applyto_variable, table_name,
-                     row.date_accessed if row.date_accessed != '-9999' \
-                        else None,
-                     row.date_closing if row.date_closing != '-9999' \
-                        else None,
-                     row.date_delivery if row.date_delivery != '-9999' \
-                        else None,
-                     row.date_published if row.date_published != '-9999' \
-                        else None])
+                    'STR_TO_DATE(%s, "%%Y-%%m-%%d"))'
+                    )
+                empty_dates = ['-9999', '', np.nan]
+                query_data = [
+                    row.iso, row.strata_variable, row.strata_value,
+                    row.applyto_variable, table_name,
+                    row.date_accessed
+                    if row.date_accessed not in empty_dates
+                    else None,
+                    row.date_closing
+                    if row.date_closing not in empty_dates
+                    else None,
+                    row.date_delivery
+                    if row.date_delivery not in empty_dates
+                    else None,
+                    row.date_published
+                    if row.date_published not in empty_dates
+                    else None
+                    ]
+                print(sql)
+                cursor.execute(sql, query_data)

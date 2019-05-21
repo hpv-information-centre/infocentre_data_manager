@@ -49,6 +49,7 @@ setup(
             'excel=infocentre_data_manager.plugins.codecs.excel:ExcelCodec',
             'old_excel=infocentre_data_manager.plugins.codecs.old_excel:OldExcelCodec',
             'mysql=infocentre_data_manager.plugins.codecs.mysql:MySQLCodec',
+            'pickle=infocentre_data_manager.plugins.codecs.pickle:PickleCodec',
         ],
         'data_manager.data_validators': [
             'null=infocentre_data_manager.plugins.data_validators.null:NullValidator',

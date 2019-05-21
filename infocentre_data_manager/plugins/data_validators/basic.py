@@ -6,6 +6,7 @@ This module includes the validator for variable typing.
 
 import logging
 import re
+from datetime import datetime
 from infocentre_data_manager.plugins.data_validators.base import DataValidator
 
 __all__ = ['BasicValidator', ]
@@ -32,6 +33,7 @@ class BasicValidator(DataValidator):
         self._check_table_content_description(data_dict)
         self._check_no_description_vars(data_dict)
         self._check_invalid_vars(data_dict)
+        self._check_dates(data_dict)
 
         if len(self.errors) + len(self.warnings) == 0:
             self.info.append('No problems found.')
@@ -84,3 +86,57 @@ class BasicValidator(DataValidator):
                 'underscores are allowed.'.format(
                     ', '.join(invalid_var_names)
                 ))
+
+    def _check_dates(self, data_dict):
+        date_types = ['date_accessed',
+                      'date_closing',
+                      'date_published',
+                      'date_delivery']
+        nrows = len(data_dict['dates'].index)
+        if nrows == 0:
+            self.errors.append('No dates defined')
+            return
+        if nrows > 1:
+            self.errors.append('More than one set of dates defined.')
+            return
+
+        for date_type in date_types:
+            # Check if it exists
+            try:
+                d = data_dict['dates'].loc[0, date_type]
+            except:
+                self.errors.append('No {} defined'.format(date_type))
+                continue
+
+            # Check if its type is 'datetime'
+            if isinstance(d, datetime):
+                continue
+
+            # Check if its a valid number code (-9999, -6666)
+            try:
+                d_num = int(d)
+                if d_num not in [-9999, -6666]:
+                    self.errors.append('Invalid {}: {}'.format(
+                        date_type, d_num
+                    ))
+                continue
+            except ValueError:
+                pass  # Not a number
+
+            # Check if its an empty string
+            if d == '':
+                continue
+
+            # Check if it is a string with an accepted format (YYYY-MM-DD)
+            try:
+                str(d)
+            except ValueError:
+                self.errors.append('Invalid {}: {}'.format(date_type, d))
+                continue
+            try:
+                datetime.strptime(d, '%Y-%m-%d')
+            except ValueError:
+                self.errors.append('{} is not in YYYY-MM-DD format: {}'.format(
+                    date_type, d
+                ))
+                continue
