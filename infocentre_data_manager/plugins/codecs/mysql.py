@@ -257,14 +257,13 @@ class MySQLCodec(Codec):
 
     def _store_raw_data(self, conn, data, batch_size):
         table_name = data['general']['table_name'].iloc[0]
-        logger.error('SELECT * FROM {}'.format(table_name))
 
         table_data = pd.read_sql(
             'SELECT * FROM {}'.format(table_name), con=conn)
         db_ids = set(table_data['id'])
-        excel_ids = set(data['data']['id'])
-        ids_to_delete = list(db_ids.difference(excel_ids))
-        ids_to_replace = list(excel_ids.difference(db_ids))
+        data_ids = set(data['data']['id'])
+        ids_to_delete = list(db_ids.difference(data_ids))
+        ids_to_replace = list(data_ids.difference(db_ids))
         ids_changed = list(set(pd.concat([table_data, data['data']]).
                                drop_duplicates(keep=False)['id'].astype(str)))
         ids_changed = [int(id) for id in ids_changed
@@ -301,7 +300,7 @@ class MySQLCodec(Codec):
         data['data'].index = data['data']['id']
         df_to_replace = data['data'].loc[ids_changed, :]
 
-        for i in range(0, len(df_to_replace.index), batch_size + 1):
+        for i in range(0, len(df_to_replace.index), batch_size):
             with conn.cursor() as cursor:
                 # TODO: Refactor insert string generation
                 sql = 'REPLACE INTO {} ({}) VALUES {}'.format(
@@ -326,6 +325,7 @@ class MySQLCodec(Codec):
 
     def _store_ref_data(self, conn, data, ref_type):
         table_name = data['general']['table_name'].iloc[0]
+        print(ref_type)
 
         ref_values = set(data[ref_type].loc[:, 'value'])
         for ref in ref_values:
@@ -360,7 +360,6 @@ class MySQLCodec(Codec):
 
     def _store_dates_data(self, conn, data):
         table_name = data['general']['table_name'].iloc[0]
-
         with conn.cursor() as cursor:
             cursor.execute(
                 'DELETE FROM ref_dates_by WHERE data_table = %s',
@@ -394,5 +393,4 @@ class MySQLCodec(Codec):
                     if row.date_published not in empty_dates
                     else None
                     ]
-                print(sql)
                 cursor.execute(sql, query_data)
