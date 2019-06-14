@@ -325,8 +325,6 @@ class MySQLCodec(Codec):
 
     def _store_ref_data(self, conn, data, ref_type):
         table_name = data['general']['table_name'].iloc[0]
-        print(ref_type)
-
         ref_values = set(data[ref_type].loc[:, 'value'])
         for ref in ref_values:
             existing_ref = pd.read_sql(

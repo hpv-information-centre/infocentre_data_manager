@@ -1,6 +1,6 @@
-""" base.py
+""" integer.py
 
-This module includes the validator for variable typing.
+This module includes the validator for integers.
 
 """
 

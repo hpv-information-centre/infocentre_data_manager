@@ -61,6 +61,7 @@ setup(
             'integer=infocentre_data_manager.plugins.semantic_types.integer:IntegerType',
             'string=infocentre_data_manager.plugins.semantic_types.string:StringType',
             'iso=infocentre_data_manager.plugins.semantic_types.iso:IsoType',
+            'hpv_type=infocentre_data_manager.plugins.semantic_types.hpv_type:HPVType',
         ],
     },
 )

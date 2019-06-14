@@ -1,6 +1,6 @@
-""" base.py
+""" string.py
 
-This module includes the validator for variable typing.
+This module includes the validator for strings.
 
 """
 
