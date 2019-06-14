@@ -24,7 +24,6 @@ class HPVType(SemanticType):
                                db=kwargs['NAME'],
                                charset='utf8',
                                cursorclass=pymysql.cursors.DictCursor)
-        print('a')
         self.available_types = \
             set(pd.read_sql('SELECT hpvtype '
                             'FROM dict_hpv_types', conn)['hpvtype'])

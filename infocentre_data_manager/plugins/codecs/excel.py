@@ -8,6 +8,7 @@ import logging
 import pandas as pd
 import numpy as np
 import xlsxwriter
+import re
 from datetime import datetime
 from infocentre_data_manager.plugins.codecs.base import Codec
 from infocentre_data_manager.plugins.semantic_types.base import SemanticType
