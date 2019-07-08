@@ -29,17 +29,28 @@ class DataValidator(PluginModule):
         """
         Apply list of validators to data and accumulate the results.
 
-        :param data_dict: Data structured
+        :param data_dict: Data structure with HPV Information Centre format
         :param validators: List of strings identifying the validators to be
             applied.
         """
-        results = {}
+        results = []
         for validator in validators:
             id = validator['name']
             kwargs = validator['args']
             validator = DataValidator.get(id, **kwargs)
-            results[id] = validator.validate(data_dict)
-            results[id]['type'] = getattr(validator,
-                                          'name',
-                                          validator.__class__.__name__)
+            try:
+                result = validator.validate(data_dict)
+            except Exception:
+                result = {
+                            'info': [],
+                            'warnings': [],
+                            'errors': [
+                                'Error on this validator, please '
+                                'fix previous errors and try again.'
+                            ]
+                         }
+            result['type'] = getattr(validator,
+                                     'name',
+                                     validator.__class__.__name__)
+            results.append(result)
         return results
