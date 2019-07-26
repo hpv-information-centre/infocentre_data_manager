@@ -167,6 +167,12 @@ class MySQLCodec(Codec):
                     col.description.replace('\'', '\'\'')
                 )
             else:
+                if data['data'][col.variable].dtype != 'object':
+                    raise ValueError(
+                        '"{}" must have a text type '
+                        '(e.g. VARCHAR, TEXT, ...).'.format(
+                            col.variable
+                        ))
                 max_length_col_data = \
                     data['data'][col.variable].str.len().max()
                 if max_length_col_data > MySQLCodec.VARCHAR_SIZE:
