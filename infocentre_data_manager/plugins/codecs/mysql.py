@@ -120,7 +120,7 @@ class MySQLCodec(Codec):
 
     def store(self,
               data,
-              batch_size=100,
+              batch_size=1000,
               use_temporal_db=False,
               **kwargs):
         host = kwargs['host']
@@ -264,70 +264,98 @@ class MySQLCodec(Codec):
     def _store_raw_data(self, conn, data, batch_size):
         table_name = data['general']['table_name'].iloc[0]
 
-        table_data = pd.read_sql(
-            'SELECT * FROM {}'.format(table_name), con=conn)
-        db_ids = set(table_data['id'])
-        data_ids = set(data['data']['id'])
-        ids_to_delete = list(db_ids.difference(data_ids))
-        ids_to_replace = list(data_ids.difference(db_ids))
-        ids_changed = list(set(pd.concat([table_data, data['data']]).
-                               drop_duplicates(keep=False)['id'].astype(str)))
-        ids_changed = [int(id) for id in ids_changed
-                       if int(id) not in ids_to_delete]
+        with conn.cursor() as cursor:
+            cursor.execute('TRUNCATE TABLE {}'.format(table_name))
 
-        if len(ids_changed) > 0:
-            logger.debug(
-                'Rows inserted or updated for table {}: ids = {}'.format(
-                    table_name, ', '.join(
-                        [str(id) for id in ids_changed]
-                    )
-                )
-            )
-        if len(ids_to_delete) > 0:
-            logger.debug('Rows deleted from table {}: ids = {}'.format(
-                table_name, ', '.join(
-                    [str(id) for id in ids_to_delete]
-                )
-            ))
-
-        try:
-            for i in range(0, len(ids_to_delete), batch_size + 1):
-                upper_bound = i + batch_size
-                ids_to_delete_str = [str(id) for id in ids_to_delete]
-                conn.query('DELETE FROM {} WHERE id IN ({})'.format(
-                    table_name,
-                    ','.join(ids_to_delete_str[i:upper_bound])))
-        except ProgrammingError:
-            raise EnvironmentError(
-                "Table '{}' does not exist, create it first.".format(
-                    table_name
-                ))
-
-        data['data'].index = data['data']['id']
-        df_to_replace = data['data'].loc[ids_changed, :]
-
-        for i in range(0, len(df_to_replace.index), batch_size):
-            with conn.cursor() as cursor:
+            for i in range(0, len(data['data'].index), batch_size):
                 # TODO: Refactor insert string generation
-                sql = 'REPLACE INTO {} ({}) VALUES {}'.format(
+                sql = 'INSERT INTO {} ({}) VALUES {}'.format(
                     table_name,
                     ','.join(['`{}`'.format(col)
-                              for col in df_to_replace.columns]),
+                              for col in data['data'].columns]),
                     ','.join(['({})'.format(','.join(
                                 ["'" + v.replace("'", "\\'") + "'"
-                                    if isinstance(v, str) else str(v)
+                                 if isinstance(v, str) else str(v)
                                  for v in row[1].values]))
-                             for row
-                             in df_to_replace.iloc[
-                                i:min(
-                                    len(df_to_replace.index),
+                              for row
+                              in data['data'].iloc[
+                                 i:min(
+                                    len(data['data'].index),
                                     i + batch_size
                                     ), :
-                             ].iterrows()
-                             ]
+                                ].iterrows()
+                              ]
                              )
                 )
                 cursor.execute(sql)
+
+        # FIX: Selective data replacing to work propertly with
+        # temporal databases.
+
+        # table_data = pd.read_sql(
+        #     'SELECT * FROM {}'.format(table_name), con=conn)
+        # db_ids = set(table_data['id'])
+        # data_ids = set(data['data']['id'])
+        # ids_to_delete = list(db_ids.difference(data_ids))
+        # ids_to_replace = list(data_ids.difference(db_ids))
+        # ids_changed = list(set(pd.concat([table_data, data['data']]).
+        #                        drop_duplicates(keep=False)['id'].astype(str)))
+        # ids_changed = [int(id) for id in ids_changed
+        #                if int(id) not in ids_to_delete]
+
+        # if len(ids_changed) > 0:
+        #     logger.debug(
+        #         'Rows inserted or updated for table {}: ids = {}'.format(
+        #             table_name, ', '.join(
+        #                 [str(id) for id in ids_changed]
+        #             )
+        #         )
+        #     )
+        # if len(ids_to_delete) > 0:
+        #     logger.debug('Rows deleted from table {}: ids = {}'.format(
+        #         table_name, ', '.join(
+        #             [str(id) for id in ids_to_delete]
+        #         )
+        #     ))
+
+        # try:
+        #     for i in range(0, len(ids_to_delete), batch_size + 1):
+        #         upper_bound = i + batch_size
+        #         ids_to_delete_str = [str(id) for id in ids_to_delete]
+        #         conn.query('DELETE FROM {} WHERE id IN ({})'.format(
+        #             table_name,
+        #             ','.join(ids_to_delete_str[i:upper_bound])))
+        # except ProgrammingError:
+        #     raise EnvironmentError(
+        #         "Table '{}' does not exist, create it first.".format(
+        #             table_name
+        #         ))
+
+        # data['data'].index = data['data']['id']
+        # df_to_replace = data['data'].loc[ids_changed, :]
+
+        # for i in range(0, len(df_to_replace.index), batch_size):
+        #     with conn.cursor() as cursor:
+        #         # TODO: Refactor insert string generation
+        #         sql = 'REPLACE INTO {} ({}) VALUES {}'.format(
+        #             table_name,
+        #             ','.join(['`{}`'.format(col)
+        #                       for col in df_to_replace.columns]),
+        #             ','.join(['({})'.format(','.join(
+        #                         ["'" + v.replace("'", "\\'") + "'"
+        #                             if isinstance(v, str) else str(v)
+        #                          for v in row[1].values]))
+        #                      for row
+        #                      in df_to_replace.iloc[
+        #                         i:min(
+        #                             len(df_to_replace.index),
+        #                             i + batch_size
+        #                             ), :
+        #                      ].iterrows()
+        #                      ]
+        #                      )
+        #         )
+        #         cursor.execute(sql)
 
     def _store_ref_data(self, conn, data, ref_type):
         table_name = data['general']['table_name'].iloc[0]

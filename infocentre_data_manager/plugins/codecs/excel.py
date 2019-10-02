@@ -43,6 +43,7 @@ class ExcelCodec(Codec):
         variables.fillna('', inplace=True)
         data = excel_content['DATA']
         data['id'] = data['id'].astype(int)
+        data = data.replace('nan', '')
         sources = excel_content['SOURCES']
         notes = excel_content['NOTES']
         methods = excel_content['METHODS']
