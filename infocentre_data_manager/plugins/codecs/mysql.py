@@ -408,7 +408,7 @@ class MySQLCodec(Codec):
                     'STR_TO_DATE(%s, "%%Y-%%m-%%d"), '
                     'STR_TO_DATE(%s, "%%Y-%%m-%%d"))'
                     )
-                empty_dates = ['-9999', '', np.nan]
+                empty_dates = [-9999, '-9999', '', np.nan]
                 query_data = [
                     row.iso, row.strata_variable, row.strata_value,
                     row.applyto_variable, table_name,

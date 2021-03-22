@@ -51,6 +51,7 @@ class ExcelCodec(Codec):
 
         dates = excel_content['DATES']
         dates = dates.replace('nan', '')
+        dates = dates.fillna('')
 
         return {
             'general': general,
